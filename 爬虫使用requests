@@ -1,0 +1,86 @@
+urllib库中的urlopen()方法实际上是以GET方式请求网页，而requests中相应的方法就是get()方法
+```
+import requests
+
+r=requests.get('https://www.baidu.com/')     #response = urllib.request.urlopen('https://www.python.org')#
+print(type(r))
+print(r.status_code)
+print(type(r.text))
+print(r.text)
+print(r.cookies)
+```
+调用get()方法实现与urlopen()相同的操作，得到一个Response对象，然后分别输出了Response的类型、状态码、响应体的类型、内容以及Cookies
+
+**GET请求**
+构建一个最简单的GET请求:
+```
+import requeests
+
+r=requests.get('http://httpbin.org/get')
+print(r.text)
+```
+成功发起了GET请求，返回结果中包含请求头、URL、IP等信息
+
+对于GET请求，如果要附加额外的信息,利用params参数添加，例如，想添加两个参数，其中name是germey，age是22
+1.可以直接添加`r = requests.get('http://httpbin.org/get?name=germey&age=22')`
+2.用params
+```
+import requests
+ 
+data = {
+    'name': 'germey',
+    'age': 22
+}
+r = requests.get("http://httpbin.org/get", params=data)
+print(r.text)
+```
+可知，请求的链接自动被构造成了：`http://httpbin.org/get?age=22&name=germey`
+
+网页的返回类型实际上是str类型，但是它很特殊，是JSON格式的。所以，如果想直接解析返回结果，得到一个字典格式的话，可以直接调用**json()** 方法。
+```
+import requests
+ 
+r = requests.get("http://httpbin.org/get")
+print(type(r.text))
+print(r.json())
+print(type(r.json()))
+```
+调用json()方法，就可以将返回结果是JSON格式的字符串转化为字典
+但需要注意，如果返回结果不是JSON格式，便会出现解析错误，抛出json.decoder.JSONDecodeError异常
+
+上面的请求链接返回的是JSON形式的字符串，那么如果请求普通的网页，则肯定能获得相应的内容了。下面以“知乎”→“发现”页面为例来看一下：我们加入了headers信息，其中包含了User-Agent字段信息，也就是浏览器标识信息，用了最基础的正则表达式来匹配出所有的问题内容
+```
+import requests
+import re
+ 
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'
+}
+r = requests.get("https://www.zhihu.com/explore", headers=headers)
+pattern = re.compile('explore-feed.*?question_link.*?>(.*?)</a>', re.S)
+titles = re.findall(pattern, r.text)
+print(titles)
+```
+
+**抓取二进制数据**
+
+图片、音频、视频这些文件本质上都是由二进制码组成的，由于有特定的保存格式和对应的解析方式，我们才可以看到这些形形色色的多媒体。所以，想要抓取它们，就要拿到它们的二进制码
+例如：抓取GitHub的站点图标
+```
+import requests
+ 
+r = requests.get("https://github.com/favicon.ico")
+print(r.text)
+print(r.content)
+```
+由于图片是二进制数据，所以前者在打印时转化为str类型，也就是图片直接转化为字符串，这就会出现乱码。
+接着，将刚才提取到的图片保存下来：
+```
+import requests
+ 
+r = requests.get("https://github.com/favicon.ico")
+with open('favicon.ico', 'wb') as f:
+    f.write(r.content)
+```
+用open()方法，它的第一个参数是文件名称，第二个参数代表以二进制写的形式打开，可以向文件里写入二进制数据。
+
