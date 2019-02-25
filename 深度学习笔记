@@ -140,12 +140,12 @@ np.stack(arrays, axis=2)则表示arrays[0][0][0]，arrays[1][0][0]和arrays[2][0
 
 SimpleRNN能够像其他Keras层一样处理序列张量，与Keras中的所有循环层一样，SimpleRNN可以在两种不同模式下运行：一种是返回每个时间步连续输出的完整序列，即形状为（batch_size,timesteps,output_features）的三维张量；另一种是只返回每个书序列的最终输出，即形状为（batch_size,output_features）的二维张量。这两种模式有return_sequences这个构造函数参数来控制。
 
+
 model.fit():fit()函数   ：
 fit( x, y, batch_size=32, epochs=10, verbose=1, callbacks=None,validation_split=0.0, validation_data=None, shuffle=True, 
 class_weight=None, sample_weight=None, initial_epoch=0)
 
-x：输入数据。如果模型只有一个输入，那么x的类型是numpy 
-array，如果模型有多个输入，那么x的类型应当为list，list的元素是对应于各个输入的numpy array
+x：输入数据。如果模型只有一个输入，那么x的类型是numpy array，如果模型有多个输入，那么x的类型应当为list，list的元素是对应于各个输入的numpy array
 y：标签，numpy array
 batch_size：整数，指定进行梯度下降时每个batch包含的样本数。训练时一个batch的样本会被计算一次梯度下降，使目标函数优化一步。
 epochs：整数，训练终止时的epoch值，训练将在达到该epoch值时停止，当没有设置initial_epoch时，它就是训练的总轮数，否则训练的总轮数为epochs - inital_epoch
@@ -160,3 +160,24 @@ array，用于在训练时调整损失函数（仅用于训练）。可以传递
 initial_epoch: 从该参数指定的epoch开始训练，在继续之前的训练时有用。
 fit函数返回一个History的对象，其History.history属性记录了损失函数和其他指标的数值随epoch变化的情况，如果有验证集的话，也包含了验证集的这些指标变化情况
 
+激活函数（activation）：多层函数需要设置激活函数，如果不使用激活函数，则神经网络的效果只相当于只有输入层与输出层两层，设置多少层中间层也没卵用。常见的激活函数Sigmoid 与 tanh  函数，主要差异在于Sigmoid 把值压到0-1之间，tanh把值压到-1,1之间，当输入非常大或者非常小的时候，这些神经元的梯度是接近于0的，也就是说，当初始值没设好，会导致很多值接近于0，而在梯度下降时，就会跳过，所以对初始值的设置与调试非常重要
+
+快速开始序贯（Sequential）模型：序贯模型是多个网络层的线性堆叠，也就是“一条路走到黑”。可以通过向Sequential模型传递一个layer的list来构造该模型；也可以通过.add()方法一个个的将layer加入模型中。
+model = Sequential([Dense(32, units=784),Activation('relu'),Dense(10),Activation('softmax'),])
+
+or
+
+model = Sequential()
+model.add(Dense(32, input_shape=(784,)))
+model.add(Activation('relu'))
+
+LSTM比SimpleRNN的精度高，主要是因为LSTM受梯度消失问题的影响要小得多
+
+循环dropout：这是一种特殊的内置方法，在循环层中使用dropout来降低过拟合
+堆叠循环层（stacking recurrent layers）：会提高网络的表示能力（代价是更高的计算负荷）
+双向循环层（bidirection recurrent layer）：将相同的信息以不同的方式呈现给循环网络，可以提高精度并缓解遗忘问题
+
+range() 函数可创建一个整数列表，一般用在 for 循环中。语法：range(start, stop[, step])，说明：start: 计数从 start 开始。默认是从 0 开始。例如range（5）等价于range（0， 5）;stop: 计数到 stop 结束，但不包括 stop。例如：range（0， 5） 是[0, 1, 2, 3, 4]没有5；step：步长，默认为1。例如：range（0， 5） 等价于 range(0, 5, 1)
+
+numpy.random.randint() 
+官方文档中给出的用法是：numpy.random.randint(low,high=None,size=None,dtype) ，生成在半开半闭区间[low,high)上离散均匀分布的整数值;若high=None，则取值区间变为[0,low) 
